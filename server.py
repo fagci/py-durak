@@ -165,6 +165,7 @@ class Durak(CardsTypeStandard):
             self.attacker = players[0]
 
         if not self.defender:
+            # TODO: fix
             attacker_index = players.index(self.attacker)
             self.defender = players[(attacker_index + 1) % len(players)]
 
@@ -183,7 +184,7 @@ class Durak(CardsTypeStandard):
                 if need > 0:
                     p.add_cards(self.deck.slice(need))
 
-        self.attacker = self.defender
+        self.attacker = winner
         self.defender = None
 
     def iter(self):
