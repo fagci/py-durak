@@ -9,12 +9,25 @@ class CardsTypeStandard:
 
 
 class Deck(list[tuple]):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trump = kwargs.get('trump', (None, None))
+
+    def set_trump(self, trump):
+        self.trump = trump
+
     @property
     def sorted(self):
+        _, ts = self.trump
+
         def key(v):
             n, s = v
-            return CardsTypeStandard.NOMINALS.index(n), s
-        return sorted(self, key=key)
+            return (
+                1 if s == ts else 0,
+                CardsTypeStandard.NOMINALS.index(n),
+                s,
+            )
+        return Deck(sorted(self, key=key), trump=self.trump)
 
     def __repr__(self):
         return ' '.join('%s%s' % c for c in self)
@@ -22,14 +35,14 @@ class Deck(list[tuple]):
     def __str__(self):
         return self.__repr__()
 
-    @property
-    def sorted_str(self):
-        return ' '.join('%s%s' % c for c in self.sorted)
-
     def rotate(self, i: int = 1):
-        part = self[:i]
-        del self[:i]
+        part = self.slice(i)
         self.extend(part)
+
+    def slice(self, n):
+        part = self[:n]
+        del self[:n]
+        return part
 
 
 class Player:
@@ -39,10 +52,36 @@ class Player:
 
     def add_cards(self, cards):
         self._cards.extend(cards)
+        self.resort()
+
+    def resort(self):
+        self._cards = self._cards.sorted
+
+    def get_small_card(self):
+        card = self._cards[0]
+        del self._cards[0]
+        return card
+
+    def get_beat_card(self, card):
+        _, ts = self._cards.trump
+        nom = CardsTypeStandard.NOMINALS
+        cn, cs = card
+        for beat_card in self._cards:
+            bn, bs = beat_card
+            larger = bs == cs and nom.index(cn) < nom.index(bn)
+            trump_beat = bs == ts and cs != ts
+            # print(beat_card, larger, trump_beat, self.cards.trump)
+            if larger or trump_beat:
+                self._cards.remove(beat_card)
+                return beat_card
+
+    def set_trump(self, trump):
+        self._cards.set_trump(trump)
+        self.resort()
 
     @property
     def cards(self):
-        return self._cards[:]
+        return self._cards
 
     @property
     def has_cards(self):
@@ -52,7 +91,11 @@ class Player:
         return hash(self.name)
 
     def __repr__(self):
-        return '%s: %s' % (self.name, self._cards.sorted_str)
+        return '%s: %s' % (self.name, self.sorted_str)
+
+    @property
+    def sorted_str(self):
+        return ' '.join('%s%s' % c for c in self.cards)
 
 
 class Durak(CardsTypeStandard):
@@ -84,6 +127,9 @@ class Durak(CardsTypeStandard):
         else:
             self.trump = cards[-1]
 
+        for player in players:
+            player.set_trump(self.trump)
+
         print('Trump: %s%s' % self.trump)
         print(repr(self.deck))
 
@@ -111,6 +157,9 @@ class Durak(CardsTypeStandard):
 
     def play_round(self):
         players = self.players_w_cards
+        print('Deck:', self.deck.__str__())
+        for p in self.players:
+            print(p)
 
         if not self.attacker:
             self.attacker = players[0]
@@ -119,15 +168,35 @@ class Durak(CardsTypeStandard):
             attacker_index = players.index(self.attacker)
             self.defender = players[(attacker_index + 1) % len(players)]
 
-        for _ in range(randint(1, 4)):
-            if self.attacker.has_cards:
-                self.attacker._cards.pop()
+        print(self.attacker.name, '>', self.defender.name)
+
+        winner = None
+        while winner is None:
+            winner = self.iter()
 
         for p in self.players_w_cards:
             print(p)
 
+        for p in players:
+            if self.deck:
+                need = 6 - len(p.cards)
+                if need > 0:
+                    p.add_cards(self.deck.slice(need))
+
         self.attacker = self.defender
         self.defender = None
+
+    def iter(self):
+        card = self.attacker.get_small_card()
+        beat = self.defender.get_beat_card(card)
+        print('%s%s' % card)
+        print('%s%s' % beat if beat else 'fail')
+        if not beat:
+            self.defender.add_cards([card])
+            return self.attacker
+        else:
+            self.field[card] = beat
+            return self.defender
 
 
 class CardGame:
