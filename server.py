@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from random import shuffle
+from random import randint, seed, shuffle
 
 
 class CardsTypeStandard:
@@ -110,10 +110,24 @@ class Durak(CardsTypeStandard):
         print('Durak:', durak)
 
     def play_round(self):
-        for p in self.players_w_cards:
-            p._cards.pop()
+        players = self.players_w_cards
+
+        if not self.attacker:
+            self.attacker = players[0]
+
+        if not self.defender:
+            attacker_index = players.index(self.attacker)
+            self.defender = players[(attacker_index + 1) % len(players)]
+
+        for _ in range(randint(1, 4)):
+            if self.attacker.has_cards:
+                self.attacker._cards.pop()
+
         for p in self.players_w_cards:
             print(p)
+
+        self.attacker = self.defender
+        self.defender = None
 
 
 class CardGame:
@@ -139,6 +153,7 @@ class CardGame:
 
 
 def main():
+    seed(1)
     game = CardGame(Durak())
     for _ in range(3):
         game.newplayer()
