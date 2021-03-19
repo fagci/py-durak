@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 from random import seed
-from cardgame.logic import Durak
+
 from cardgame.game import CardGame
+from cardgame.logic import Durak
 
 
 def main():

@@ -12,11 +12,8 @@ class CardGame:
         player = Player('Player %d' % num)
         self.players.append(player)
         self.players_count += 1
+        return player
 
     def play(self):
         self.logic.init_players(self.players)
-
-        for player in self.players:
-            print(player)
-
         self.logic.play()

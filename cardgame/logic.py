@@ -1,4 +1,5 @@
 from random import shuffle
+
 from cardgame.deck import Deck, DeckTypeRus
 from cardgame.player import Player
 
