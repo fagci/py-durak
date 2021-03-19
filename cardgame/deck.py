@@ -1,7 +1,9 @@
 class DeckType:
-    NOM = ('A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K')
-    SUIT = ('♠', '♥', '♣', '♦')
-    GRAPH = (
+    _NOM = ('A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K')
+    _SUIT = ('♠', '♥', '♣', '♦')
+    NOM = _NOM
+    SUIT = _SUIT
+    _GRAPH = (
         ('🂡', '🂢', '🂣', '🂤', '🂥', '🂦', '🂧', '🂨', '🂩', '🂪', '🂫', '🂭', '🂮'),
         ('🂱', '🂲', '🂳', '🂴', '🂵', '🂶', '🂷', '🂸', '🂹', '🂺', '🂻', '🂽', '🂾'),
         ('🃁', '🃂', '🃃', '🃄', '🃅', '🃆', '🃇', '🃈', '🃉', '🃊', '🃋', '🃍', '🃎'),
@@ -11,12 +13,12 @@ class DeckType:
     @classmethod
     def graph(cls, card):
         nominal, suit = card
-        suit_index = cls.SUIT.index(suit)
-        nom_index = cls.NOM.index(nominal)
-        return cls.GRAPH[suit_index][nom_index]
+        suit_index = cls._SUIT.index(suit)
+        nom_index = cls._NOM.index(nominal)
+        return cls._GRAPH[suit_index][nom_index]
 
 
-class CardsTypeRus:
+class DeckTypeRus(DeckType):
     NOM = ('6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
     SUIT = ('♠', '♥', '♣', '♦')
 
@@ -37,14 +39,14 @@ class Deck(list[tuple]):
             n, s = v
             return (
                 1 if s == ts else 0,
-                CardsTypeRus.NOM.index(n),
+                DeckTypeRus.NOM.index(n),
                 s,
             )
         return Deck(sorted(self, key=key), trump=self.trump)
 
     def get_beat_card(self, card):
         _, ts = self.trump
-        nom = CardsTypeRus.NOM
+        nom = DeckTypeRus.NOM
         cn, cs = card
         for beat_card in self:
             bn, bs = beat_card

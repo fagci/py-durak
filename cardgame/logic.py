@@ -1,9 +1,9 @@
 from random import shuffle
-from cardgame.deck import Deck, CardsTypeRus, DeckType
+from cardgame.deck import Deck, DeckTypeRus
 from cardgame.player import Player
 
 
-class Durak(CardsTypeRus):
+class Durak(DeckTypeRus):
     def __init__(self):
         self.deck = Deck()
         for n in self.NOM:
@@ -35,7 +35,7 @@ class Durak(CardsTypeRus):
         for player in players:
             player.set_trump(self.trump)
 
-        print('Trump:', DeckType.graph(self.trump))
+        print('Trump:', self.graph(self.trump))
 
     @property
     def players_w_cards(self):
@@ -83,6 +83,7 @@ class Durak(CardsTypeRus):
         winner = None
         while winner is None:
             winner = self.iter()
+        self.field.clear()
         print(' ', '-' * 30)
 
         for p in self.players_w_cards:
@@ -100,8 +101,8 @@ class Durak(CardsTypeRus):
     def iter(self):
         card = self.attacker.get_small_card()
         beat = self.defender.get_beat_card(card)
-        print(' ', DeckType.graph(card))
-        print(' ', DeckType.graph(beat) if beat else 'FAIL')
+        print(' ', self.graph(card))
+        print(' ', self.graph(beat) if beat else 'FAIL')
         if not beat:
             self.defender.add_cards([card])
             return self.attacker
