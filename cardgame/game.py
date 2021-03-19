@@ -9,8 +9,7 @@ class CardGame:
 
     def newplayer(self):
         num = len(self.players) + 1
-        name = 'Player %d' % num
-        player = Player(name)
+        player = Player('Player %d' % num)
         self.players.append(player)
         self.players_count += 1
 

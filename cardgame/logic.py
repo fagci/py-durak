@@ -1,5 +1,5 @@
 from random import shuffle
-from cardgame.deck import Deck, CardsTypeRus
+from cardgame.deck import Deck, CardsTypeRus, DeckType
 from cardgame.player import Player
 
 
@@ -35,8 +35,7 @@ class Durak(CardsTypeRus):
         for player in players:
             player.set_trump(self.trump)
 
-        print('Trump: %s%s' % self.trump)
-        print(repr(self.deck))
+        print('Trump:', DeckType.graph(self.trump))
 
     @property
     def players_w_cards(self):
@@ -54,7 +53,8 @@ class Durak(CardsTypeRus):
         round_num = 0
         while durak is None:
             round_num += 1
-            print('>> Round', round_num)
+            print()
+            print('Round', round_num)
             self.play_round()
             durak = self.get_durak()
 
@@ -62,26 +62,31 @@ class Durak(CardsTypeRus):
 
     def play_round(self):
         players = self.players_w_cards
-        print('Deck:', self.deck.__str__())
-        for p in self.players:
-            print(p)
+
+        if self.deck:
+            print('  Deck:', str(self.deck))
+
+        for p in players:
+            print(' ', p)
 
         if not self.attacker:
             self.attacker = players[0]
 
         if not self.defender:
-            # TODO: fix
             attacker_index = players.index(self.attacker)
             self.defender = players[(attacker_index + 1) % len(players)]
 
-        print(self.attacker.name, '>', self.defender.name)
+        print()
+        print(' ', self.attacker.name, '>', self.defender.name)
 
+        print(' ', '-' * 30)
         winner = None
         while winner is None:
             winner = self.iter()
+        print(' ', '-' * 30)
 
         for p in self.players_w_cards:
-            print(p)
+            print(' ', p)
 
         for p in players:
             if self.deck:
@@ -89,14 +94,14 @@ class Durak(CardsTypeRus):
                 if need > 0:
                     p.add_cards(self.deck.slice(need))
 
-        self.attacker = winner
+        self.attacker = winner if winner.has_cards else None
         self.defender = None
 
     def iter(self):
         card = self.attacker.get_small_card()
         beat = self.defender.get_beat_card(card)
-        print('%s%s' % card)
-        print('%s%s' % beat if beat else 'fail')
+        print(' ', DeckType.graph(card))
+        print(' ', DeckType.graph(beat) if beat else 'FAIL')
         if not beat:
             self.defender.add_cards([card])
             return self.attacker
