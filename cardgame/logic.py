@@ -5,13 +5,13 @@ from cardgame.player import Player
 
 
 class Durak(DeckTypeRus):
+    CARDS_PER_PLAYER = 6
+
     def __init__(self):
-        self.deck = Deck()
-        for n in self.NOM:
-            for s in self.SUIT:
-                self.deck.append((n, s))
+        self.deck = Deck((n, s) for n in self.NOM for s in self.SUIT)
 
         shuffle(self.deck)
+
         self.field = {}
         self.attacker = None
         self.defender = None
@@ -19,7 +19,8 @@ class Durak(DeckTypeRus):
     def init_players(self, players: list[Player]):
         self.players = players
         players_count = len(players)
-        cards_per_player = min(6, len(self.deck) // players_count)
+        cards_per_player = len(self.deck) // players_count
+        cards_per_player = min(self.CARDS_PER_PLAYER, cards_per_player)
 
         cards = []
         for player in players:
@@ -44,14 +45,15 @@ class Durak(DeckTypeRus):
 
     def get_durak(self):
         w_cards = self.players_w_cards
-        w_cards_count = len(w_cards)
-        if w_cards_count > 1:
+        if len(w_cards) > 1:
             return
-        return w_cards[0] if w_cards_count else False
+        return w_cards[0] if w_cards else False
 
     def play(self):
         durak = None
         round_num = 0
+
+        # if durak is False, tie
         while durak is None:
             round_num += 1
             print()
@@ -102,8 +104,10 @@ class Durak(DeckTypeRus):
     def iter(self):
         card = self.attacker.get_small_card()
         beat = self.defender.get_beat_card(card)
+
         print(' ', self.graph(card))
         print(' ', self.graph(beat) if beat else 'FAIL')
+
         if not beat:
             self.defender.add_cards([card])
             return self.attacker
